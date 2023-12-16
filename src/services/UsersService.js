@@ -1,0 +1,38 @@
+const { nanoid } = require('nanoid');
+const { Pool } = require('pg');
+const bcrypt = require('bcrypt');
+const InvariantError = require('../exceptions/InvariantError');
+
+class UserService {
+  constructor() {
+    this.pool = new Pool();
+  }
+
+  async addUser({ username, password, fullname }) {
+    await this.verifyNewUsername(username);
+    const id = `user-${nanoid(16)}`;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const query = {
+      text: 'insert into users values($1, $2, $3, $4) returning id',
+      values: [id, username, hashedPassword, fullname],
+    };
+    const result = await this.pool.query(query);
+    if (!result.rowCount) {
+      throw new InvariantError('Pengguna gagal ditambahkan');
+    }
+    return result.rows[0].id;
+  }
+
+  async verifyNewUsername(username) {
+    const query = {
+      text: 'select username from users where username = $1',
+      values: [username],
+    };
+    const result = await this.pool.query(query);
+    if (result.rowCount > 0) {
+      throw new InvariantError('Pengguna gagal ditambahkan. Username sudah digunakan');
+    }
+  }
+}
+
+module.exports = UserService;
