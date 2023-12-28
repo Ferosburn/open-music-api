@@ -6,16 +6,19 @@ const songs = require('./api/songs');
 const users = require('./api/users');
 const authentications = require('./api/authentications');
 const playlists = require('./api/playlists');
-const AlbumsService = require('./services/AlbumsService');
-const SongsService = require('./services/SongsService');
-const UsersService = require('./services/UsersService');
-const AuthenticationsService = require('./services/AuthenticationsService');
-const PlaylistsService = require('./services/PlaylistsService');
+const _exports = require('./api/exports');
+const AlbumsService = require('./services/postgres/AlbumsService');
+const SongsService = require('./services/postgres/SongsService');
+const UsersService = require('./services/postgres/UsersService');
+const AuthenticationsService = require('./services/postgres/AuthenticationsService');
+const PlaylistsService = require('./services/postgres/PlaylistsService');
+const ProducerService = require('./services/rabbitmq/ProducerService');
 const { AlbumsValidator } = require('./validator/albums');
 const { SongsValidator } = require('./validator/songs');
 const { UsersValidator } = require('./validator/users');
 const AuthenticationsValidator = require('./validator/authentications');
 const PlaylistsValidator = require('./validator/playlists');
+const ExportsValidator = require('./validator/exports');
 const TokenManager = require('./tokenize/TokenManager');
 const ClientError = require('./exceptions/ClientError');
 
@@ -93,6 +96,14 @@ const init = async () => {
       options: {
         playlistsService,
         validator: PlaylistsValidator,
+      },
+    },
+    {
+      plugin: _exports,
+      options: {
+        producerService: ProducerService,
+        playlistsService,
+        validator: ExportsValidator,
       },
     },
   ]);
