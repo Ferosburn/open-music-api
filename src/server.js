@@ -10,6 +10,7 @@ const authentications = require('./api/authentications');
 const playlists = require('./api/playlists');
 const _exports = require('./api/exports');
 const uploads = require('./api/uploads');
+const likes = require('./api/likes');
 const AlbumsService = require('./services/postgres/AlbumsService');
 const SongsService = require('./services/postgres/SongsService');
 const UsersService = require('./services/postgres/UsersService');
@@ -17,6 +18,7 @@ const AuthenticationsService = require('./services/postgres/AuthenticationsServi
 const PlaylistsService = require('./services/postgres/PlaylistsService');
 const ProducerService = require('./services/rabbitmq/ProducerService');
 const StorageService = require('./services/storage/StorageService');
+const AlbumLikesService = require('./services/postgres/AlbumLikesService');
 const { AlbumsValidator } = require('./validator/albums');
 const { SongsValidator } = require('./validator/songs');
 const { UsersValidator } = require('./validator/users');
@@ -33,6 +35,7 @@ const init = async () => {
   const usersService = new UsersService();
   const authenticationsService = new AuthenticationsService();
   const playlistsService = new PlaylistsService();
+  const albumLikesService = new AlbumLikesService();
   const storageService = new StorageService(
     path.resolve(__dirname, 'api/uploads/file/images'),
   );
@@ -123,6 +126,13 @@ const init = async () => {
         storageService,
         albumsService,
         validator: UploadsValidator,
+      },
+    },
+    {
+      plugin: likes,
+      options: {
+        albumLikesService,
+        albumsService,
       },
     },
   ]);
